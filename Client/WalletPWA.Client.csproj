@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+	<PropertyGroup>
+		<TargetFramework>net6.0</TargetFramework>
+		<PublishTrimmed>true</PublishTrimmed>
+		<BlazorWebAssemblyEnableLinking>false</BlazorWebAssemblyEnableLinking>
+		<RunAOTCompilation>true</RunAOTCompilation>
+	</PropertyGroup>
+
+	
+	
+	<ItemGroup>
+		<PackageReference Include="Blazored.LocalStorage" Version="4.1.5" />
+		<PackageReference Include="Microsoft.AspNetCore.Authorization" Version="6.0.0" />
+		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.0" />
+		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="6.0.0" />
+		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="6.0.0" PrivateAssets="all" />
+		<PackageReference Include="Microsoft.Extensions.Http" Version="6.0.0" />
+		<PackageReference Include="System.Net.Http.Json" Version="6.0.0" />
+		<PackageReference Include="MudBlazor" Version="5.1.5" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\Shared\WalletPWA.Shared.csproj" />
+	</ItemGroup>
+	
+	
+	
+</Project>

@@ -1,0 +1,126 @@
+@page "/pages/authentication/register"
+@layout LoginLayout
+
+@inject NavigationManager _navigationManager
+@inject ILoginService LoginService
+@inject ISnackbar Snackbar
+
+@using System.Text.RegularExpressions
+@using System.ComponentModel.DataAnnotations
+
+<MudText Typo="Typo.h4" GutterBottom="true">Sign Up</MudText>
+<MudText>Already have an account? <MudLink Href="/pages/authentication/login">Sign In</MudLink></MudText>
+<MudForm @ref="form" @bind-IsValid="@success">
+    <MudTextField T="string" @bind-Value="@_Email" Label="E-mail" Variant="Variant.Outlined" Required="true" RequiredError="Email is required!"
+                  Validation="@(new EmailAddressAttribute() {ErrorMessage = "The email address is invalid"})"></MudTextField>
+
+
+    <MudTextField T="string" @bind-Value="@_Password" Label="Password" HelperText="Choose a strong password" @ref="pwField1"
+                  Variant="Variant.Outlined" InputType="@PasswordInput" Adornment="Adornment.End" AdornmentIcon="@PasswordInputIcon"
+                  OnAdornmentClick="TogglePasswordVisibility" Validation="@(new Func<string, IEnumerable<string>>(PasswordStrength))"
+                  Required="true" RequiredError="Password is required!" />
+    <MudTextField T="string" Variant="Variant.Outlined" Required="true"
+                  Label="Password" HelperText="Repeat the password" InputType="@PasswordInput"
+                  Validation="@(new Func<string, string>(PasswordMatch))" />
+
+    <MudCheckBox @bind-Checked="@AgreeToTerms" Required="true" RequiredError="You must agree" Label="I agree to the terms and privacy" Color="Color.Primary" Class="ml-n1 my-3"></MudCheckBox>
+
+</MudForm>
+
+
+<MudButton Disabled="@(_processing || !success)" Variant="Variant.Filled" Color="Color.Primary" OnClick="@((e) => SignUp())" Size="Size.Large" FullWidth="true">
+    @if (_processing)
+    {
+<MudProgressCircular Color="Color.Primary" Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                    <MudText Class="ms-2">Processing</MudText> }
+                else
+                {
+<MudText>Register</MudText>}
+</MudButton>
+
+@if (error != null)
+{
+<MudAlert Severity="Severity.Error" Class="mt-8 mud-width-full" ContentAlignment="HorizontalAlignment.Center">@error</MudAlert>}
+
+
+@code { string _Email { get; set; }
+    string _Password { get; set; }
+    public bool AgreeToTerms { get; set; }
+
+    bool _processing;
+    bool success;
+    string error;
+
+    MudTextField<string> pwField1;
+    MudForm form;
+
+    bool PasswordVisibility;
+    InputType PasswordInput = InputType.Password;
+    string PasswordInputIcon = Icons.Material.Filled.VisibilityOff;
+
+    void TogglePasswordVisibility()
+    {
+        if (PasswordVisibility)
+        {
+            PasswordVisibility = false;
+            PasswordInputIcon = Icons.Material.Filled.VisibilityOff;
+            PasswordInput = InputType.Password;
+        }
+        else
+        {
+            PasswordVisibility = true;
+            PasswordInputIcon = Icons.Material.Filled.Visibility;
+            PasswordInput = InputType.Text;
+        }
+    }
+
+
+    private IEnumerable<string> PasswordStrength(string pw)
+    {
+        if (string.IsNullOrWhiteSpace(pw))
+        {
+            yield return "Password is required!";
+            yield break;
+        }
+        if (pw.Length < 8)
+            yield return "Password must be at least of length 8";
+        if (!Regex.IsMatch(pw, @"[A-Z]"))
+            yield return "Password must contain at least one capital letter";
+        if (!Regex.IsMatch(pw, @"[a-z]"))
+            yield return "Password must contain at least one lowercase letter";
+        if (!Regex.IsMatch(pw, @"[0-9]"))
+            yield return "Password must contain at least one digit";
+    }
+
+    private string PasswordMatch(string arg)
+    {
+        if (pwField1.Value != arg)
+            return "Passwords don't match";
+        return null;
+    }
+
+    async Task SignUp()
+    {
+        //Aa@12345
+        _processing = true;
+        try
+        {
+            var response = await LoginService.SingUp(new User { Email = _Email, Password = _Password });
+            if (response == "Success")
+            {
+                _navigationManager.NavigateTo("/pages/authentication/login");
+                Snackbar.Add("User registred", Severity.Success);
+            }
+            else
+            {
+                error = response;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.ToString());
+            error = "Unhandled exception";
+            //throw;
+        }
+        _processing = false;
+    } }

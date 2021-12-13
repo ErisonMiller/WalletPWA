@@ -1,0 +1,149 @@
+﻿@using System.Net
+@using System.Text.Json
+@using System.IO
+
+<style>
+    .emud-button-filled {
+        display: flex;
+        padding: 6px 16px;
+        margin: 5px;
+        justify-content: flex-start;
+        align-items: center;
+        cursor: pointer;
+        transition: background-color 250ms cubic-bezier(.4, 0, .2, 1) 0ms, box-shadow 250ms cubic-bezier(.4, 0, .2, 1) 0ms, border 250ms cubic-bezier(.4, 0, .2, 1) 0ms;
+        border-radius: var(--mud-default-borderradius);
+        box-sizing: border-box;
+        box-shadow: none;
+        background-color: var(--mud-palette-action-default-hover);
+        font-family: var(--mud-typography-button-family);
+        vertical-align: middle;
+    }
+
+        .emud-button-filled:hover,
+        .emud-button-filled:focus-visible {
+            box-shadow: 0 1px 2px -1px rgba(0, 0, 0, .2), 0 4px 5px 0 rgba(0, 0, 0, .14), 0 1px 10px 0 rgba(0, 0, 0, .12);
+            background-color: var(--mud-palette-action-disabled-background);
+        }
+
+        .emud-button-filled:active {
+            box-shadow: 0 2px 3px -2px rgba(0, 0, 0, .2), 0 8px 10px 1px rgba(0, 0, 0, .14), 0 3px 14px 2px rgba(0, 0, 0, .12);
+        }
+
+        .emud-button-filled:disabled {
+            color: var(--mud-palette-action-disabled);
+            box-shadow: none;
+            background-color: var(--mud-palette-action-disabled-background) !important;
+        }
+
+    .flex-center {
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+    }
+
+    .block-left {
+        display: block;
+        justify-content: flex-start;
+        align-items: center;
+    }
+
+    .secondary-text-color {
+        color: var(--mud-palette-text-secondary);
+    }
+
+    .tit {
+        font-size: var(--mud-typography-caption-size);
+        color: var(--mud-palette-text-secondary);
+        font-weight: var(--mud-typography-button-weight);
+    }
+</style>
+
+@inject IOrderService OrderService
+
+<MudGrid Spacing="1" Justify="Justify.SpaceBetween" class="emud-button-filled">
+
+    <MudItem class="flex-center" xs="12" sm="6" md="3">
+        <MudAvatar Rounded="true" Image=@("https://files.bastter.com/acao/"+@asset.asset.Stock.Substring(0,4)+".gif") Style="margin-right:10px" />
+
+        <div>
+            <MudText Typo="Typo.button">@asset.asset.Stock</MudText>
+            <br class="mud-typography">
+            <MudText Typo="Typo.button" class="secondary-text-color">@asset.asset.Stock</MudText>
+        </div>
+    </MudItem>
+
+    <MudItem xs="12" sm="6" md="2">
+        <MudText Typo="Typo.caption" class="tit">Price</MudText>
+        <br class="mud-typography">
+        <MudText Typo="Typo.button">@asset.actualValue.ToString("c2")</MudText>
+        <MudText Typo="Typo.button" Color="@getColor(asset.variation)">@(asset.variation > 0? "🡩":"🡫") @(asset.variation_F)</MudText>
+
+
+    </MudItem>
+    <MudHidden Breakpoint="Breakpoint.MdAndUp" Invert="true">
+        <MudDivider Vertical="true" DividerType="DividerType.Middle" Class="my-2" FlexItem="true" />
+    </MudHidden>
+    <MudHidden Breakpoint="Breakpoint.SmAndDown" Invert="true">
+        <MudItem xs="12" sm="12" md="3">
+
+            <MudDivider DividerType="DividerType.Middle" />
+        </MudItem>
+    </MudHidden>
+
+
+
+
+    <MudItem xs="12" sm="4" md="2">
+        <MudText Typo="Typo.caption" class="tit">Quantity</MudText>
+        <br class="mud-typography">
+        <MudText Typo="Typo.button">@asset.asset.Quantity</MudText>
+    </MudItem>
+    <MudItem xs="12" sm="4" md="2">
+        <MudText Typo="Typo.caption" class="tit">Value</MudText>
+        <br class="mud-typography">
+        <MudText Typo="Typo.button">@(asset.totalValue.ToString("c2"))</MudText>
+    </MudItem>
+    <MudItem xs="12" sm="4" md="2">
+        <MudText Typo="Typo.caption" class="tit">Rentability</MudText>
+        <br class="mud-typography">
+        <MudText Typo="Typo.button" Color="@getColor(rentability)">@(rentability > 0? "+":"") @rentability.ToString("c2")</MudText>
+        <MudText Typo="Typo.button" Color="@getColor(rentability)">@(rentability > 0? "🡩":"🡫") @((rentability/(asset.asset.Quantity * asset.asset.Price)).ToString("p2"))</MudText>
+    </MudItem>
+
+</MudGrid>
+
+@code
+    {
+    //@onclick="ButtonOnClick"
+    [Parameter] public AssetNow asset { get; set; }
+
+    float rentability = 0.0f;
+    //mud-button-root mud-button
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        rentability = (asset.actualValue - asset.asset.Price) * asset.asset.Quantity;
+    }
+    //protected override async Task OnInitializedAsync()
+    //{
+    //    var json = await OrderService.GetPrice(asset.Stock);
+    //    int pFrom = json.IndexOf("name") -1;
+    //    int pTo = json.LastIndexOf("variation") - 2;
+    //    string jsonProcessed = "{" + json.Substring(pFrom, pTo - pFrom) + "}";
+    //    assetPrice = JsonSerializer.Deserialize<AssetPrice>(jsonProcessed);
+    //
+    //    price = float.Parse(assetPrice.price);
+    //    variation = float.Parse(assetPrice.variation);
+    //    rentability = (price - asset.Price) * asset.Quantity;
+    //    //Assets = await OrderService.GetAssets();
+    //    //Elements = await httpClient.GetFromJsonAsync<List<Order>>("webapi/periodictable");
+    //}
+
+    Color getColor(float value)
+    {
+        if (value > 0) return Color.Success;
+        if(value < 0)return Color.Error;
+        return Color.Inherit;
+    }
+}

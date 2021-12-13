@@ -1,0 +1,93 @@
+
+@page "/pages/authentication/login"
+@layout LoginLayout
+@using Microsoft.AspNetCore.Components.Authorization
+
+
+@inject NavigationManager _navigationManager
+@inject ILoginService LoginService
+@inject Blazored.LocalStorage.ILocalStorageService _localStorageService
+
+
+<MudText Typo="Typo.h4" GutterBottom="true">Sign In</MudText>
+
+<MudText>Don't have an account? <MudLink Href="/pages/authentication/register">Sign Up</MudLink></MudText>
+
+<MudTextField T="string" @bind-Value="@_Email" Label="E-mail" Variant="Variant.Outlined" Class="my-6"></MudTextField>
+
+<MudTextField @bind-Value="@_Password" Label="Password" Variant="Variant.Outlined" InputType="@PasswordInput" Adornment="Adornment.End" AdornmentIcon="@PasswordInputIcon" OnAdornmentClick="TogglePasswordVisibility" />
+
+<div Class="d-flex justify-space-between align-center">
+    <MudCheckBox T="bool" Label="Remember me?" Color="Color.Primary" Class="ml-n1 my-3"></MudCheckBox>
+    <MudLink Href="/pages/authentication/forgot-password">Forgot pwd?</MudLink>
+</div>
+
+<MudButton Disabled="@_processing" Variant="Variant.Filled" Color="Color.Primary" OnClick="@((e) => SignIn())" Size="Size.Large" FullWidth="true">
+    @if (_processing)
+    {
+<MudProgressCircular Color="Color.Primary" Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                    <MudText Class="ms-2">Processing</MudText> }
+                else
+                {
+<MudText>Sing In</MudText>}
+
+</MudButton>
+
+@if (error != null)
+{
+<MudAlert Severity="Severity.Error" Class="mt-8 mud-width-full" ContentAlignment="HorizontalAlignment.Center">@error</MudAlert>}
+
+@code {string _Email { get; set; } = "erison@miller.com";
+    string _Password { get; set; } = "Aa@12345";
+
+    string error;
+    bool _processing = false;
+
+    bool PasswordVisibility;
+    InputType PasswordInput = InputType.Password;
+    string PasswordInputIcon = Icons.Material.Filled.VisibilityOff;
+
+    void TogglePasswordVisibility()
+    {
+        if (PasswordVisibility)
+        {
+            PasswordVisibility = false;
+            PasswordInputIcon = Icons.Material.Filled.VisibilityOff;
+            PasswordInput = InputType.Password;
+        }
+        else
+        {
+            PasswordVisibility = true;
+            PasswordInputIcon = Icons.Material.Filled.Visibility;
+            PasswordInput = InputType.Text;
+        }
+    }
+
+    async Task SignIn()
+    {
+        _processing = true;
+        try
+        {
+            AuthenticationResponse authenticationResponse = await LoginService.LoginUser(new User { Email = _Email, Password = _Password });
+
+            if (authenticationResponse.Token != string.Empty)
+            {
+                await _localStorageService.SetItemAsync("jwt_token", authenticationResponse.Token);
+
+                _navigationManager.NavigateTo("/personal/dashboard", true);
+
+            }
+            else
+            {
+                error = "Invalid username or password";
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.ToString());
+            error = "Unhandled exception";
+            //throw;
+        }
+        _processing = false;
+
+    } }

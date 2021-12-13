@@ -1,0 +1,225 @@
+﻿@page "/personal/orders"
+
+@using System.Net.Http.Json
+@using System.Text.Json;
+
+
+@inject HttpClient httpClient
+@inject IOrderService OrderService
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+
+<style>
+    .selected {
+        background: var(--mud-palette-primary-darken) !important;
+    }
+
+        .selected > td {
+            background: var(--mud-palette-primary-darken) !important;
+            color: white !important;
+        }
+
+            .selected > td .mud-input {
+                color: white !important;
+            }
+</style>
+
+<MudToolBar DisableGutters="true">
+    <MudText Typo="Typo.h5" Color="Color.Primary" Class="mb-4">Orders</MudText>
+    <MudSpacer />
+
+</MudToolBar>
+
+<MudPaper Class="align-center mud-full-width">
+    <MudGrid Class="align-center mud-full-width px-5" Justify="@Justify.SpaceBetween">
+        <MudItem xs="12" sm="4" md="4">
+            <MudDateRangePicker Label="Orders date range" Editable="true" @bind-DateRange="_dateRange" />
+        </MudItem>
+        <MudSpacer />
+        <MudItem xs="12" sm="4" md="5">
+            <MudTextField @bind-Value="searchString1" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+        </MudItem>
+        <MudItem xs="12" sm="4" md="3" Style="max-width:max-content">
+            <MudFab Color="Color.Success" Icon="@Icons.Material.Filled.Add" OnClick="@((e) => AddOrder())" Class="ma-1" Size="Size.Small" IconSize="Size.Small" DisableElevation="true" aria-label="add" />
+            <MudFab Color="Color.Warning" Icon="@Icons.Material.Filled.Edit" OnClick="@((e) => EditOrder())" Class="ma-1" Size="Size.Small" IconSize="Size.Small" Disabled="@(selectedItem1 == null)" DisableElevation="true" aria-label="edit" />
+            <MudFab Color="Color.Error" Icon="@Icons.Material.Filled.Delete" OnClick="@((e) => DeleteOrder())" Class="ma-1" Size="Size.Small" IconSize="Size.Small" Disabled="@(selectedItem1 == null)" DisableElevation="true" aria-label="delete" />
+
+        </MudItem>
+    </MudGrid>
+</MudPaper>
+
+<MudTable Items="@Elements" HorizontalScrollbar="true" SortLabel="Sort By" Filter="new Func<Order,bool>(FilterFunc1)"
+          @ref="mudTable" RowClassFunc="@SelectedRowClassFunc" OnRowClick="RowClickEvent" T="Order" Hover="true">
+
+
+    <HeaderContent>
+        <MudTh><MudTableSortLabel SortBy="new Func<Order, object>(x=>x.AssetMarketType)">   Market    </MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortBy="new Func<Order, object>(x=>x.Stock)">     Stock    </MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortBy="new Func<Order, object>(x=>x.Price)">   Price    </MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortBy="new Func<Order, object>(x=>x.Quantity)">   Quantity    </MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortBy="new Func<Order, object>(x=>x.OperationProfit)">   Rentability    </MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortBy="new Func<Order, object>(x=>x.Date)">  Date    </MudTableSortLabel></MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="Market">@context.AssetMarketType</MudTd>
+
+        <MudTd DataLabel="Stock">
+            <div style="display:flex; flex-direction: row; vertical-align:center">
+                <MudAvatar Rounded="true" Size="Size.Small" Image=@("https://files.bastter.com/acao/" + @context.Stock.Substring(0,4) +".gif") Style="margin-right:10px" />
+                <MudText>@context.Stock</MudText>
+            </div>
+        </MudTd>
+        <MudTd DataLabel="Price"> @(context.Price.ToString("c2")) </MudTd>
+        <MudTd DataLabel="Quantity">@context.Quantity</MudTd>
+        <MudTd DataLabel="Rentability">
+            @if (context.OperationProfit > 0)
+            {
+                <div style="display:flex; flex-direction: row; vertical-align:center">
+                    <MudIcon Icon="@Icons.Filled.KeyboardArrowUp" Color="Color.Success" />
+                    <MudText Color="Color.Success">@(context.OperationProfit.ToString("c2"))</MudText>
+                </div>
+            }
+            else
+            {
+                @if (context.OperationProfit < 0)
+                {
+                    <div style="display:flex; flex-direction: row; vertical-align:center">
+                        <MudIcon Icon="@Icons.Filled.KeyboardArrowDown" Color="Color.Warning" />
+                        <MudText Color="Color.Warning">@(context.OperationProfit.ToString("c2"))</MudText>
+                    </div>
+                }
+                else
+                {
+                    <MudText>@(context.OperationProfit.ToString("c2"))</MudText>
+
+                }
+            }
+
+
+        </MudTd>
+        <MudTd DataLabel="Date">@context.Date.ToShortDateString()</MudTd>
+    </RowTemplate>
+    <PagerContent>
+        <MudTablePager />
+    </PagerContent>
+</MudTable>
+
+<div class="d-flex flex-wrap mt-4">
+    <MudSpacer />
+    <div style="min-width:200px;">
+        <MudText Inline="true" Class="align-self-center">Selected1: @selectedItem1?.Stock</MudText>
+        <MudText Inline="true" Class="align-self-center">Selected1: @(selectedItem1 != null)</MudText>
+    </div>
+</div>
+@code {
+    DateRange _dateRange = new DateRange(DateTime.Now.AddDays(-30).Date, DateTime.Now.Date);
+    private MudTable<Order> mudTable;
+    private string searchString1 = "";
+    private Order selectedItem1 = null;
+    private HashSet<Order> selectedItems = new HashSet<Order>();
+
+    private IEnumerable<Order> Elements = new List<Order>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        try{
+            Elements = await OrderService.GetOrders();
+        }
+        catch (Exception ex)
+        {
+                //logging the error and returning null
+            Console.WriteLine("Exception : " + ex.Message);
+
+        }
+
+        //Elements = await httpClient.GetFromJsonAsync<List<Order>>("webapi/periodictable");
+    }
+
+    private bool FilterFunc1(Order element) => FilterFunc(element, searchString1, _dateRange);
+
+    private bool FilterFunc(Order element, string searchString, DateRange dateRange)
+    {
+        if (dateRange.Start <= element.Date && dateRange.End >= element.Date)
+        {
+            if (string.IsNullOrWhiteSpace(searchString) || element.Stock.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                return true;
+        }
+        return false;
+    }
+
+
+    private void RowClickEvent(TableRowClickEventArgs<Order> tableRowClickEventArgs)
+    {
+        if (selectedItem1 != null && mudTable.SelectedItem.Equals(selectedItem1))
+        {
+            selectedItem1 = null;
+        }
+        else
+        {
+            selectedItem1 = mudTable.SelectedItem;
+        }
+    }
+
+
+
+    private string SelectedRowClassFunc(Order element, int rowNumber)
+    {
+
+        if (selectedItem1 != null && selectedItem1.Equals(element))
+        {
+            return "selected";
+        }
+        else
+        {
+            return string.Empty;
+        }
+
+    }
+
+    async Task DeleteOrder()
+    {
+        Elements = await OrderService.DeleteOrder(selectedItem1);
+    }
+
+    async Task AddOrder()
+    {
+        var dialog = DialogService.Show<WalletPWA.Client.Shared.OrderDialog>("Delete Server");
+        var result = await dialog.Result;
+
+        if (!result.Cancelled)
+        {
+            if (result.Data is Order)
+            {
+                Order o1 = (Order)result.Data;
+                //o1.AssetId = new int();
+                Elements = await OrderService.CreateOrder(o1);
+            }
+            else
+            {
+                Console.WriteLine("Error on coverting");
+            }
+            Snackbar.Add("Order Added", Severity.Success);
+        }
+    }
+
+    async Task EditOrder()
+    {
+        var parameters = new DialogParameters { ["order"] = selectedItem1, ["editOrder"] = true, ["DateNullable"] = selectedItem1.Date };
+        var dialog = DialogService.Show<WalletPWA.Client.Shared.OrderDialog>("Delete Server", parameters);
+        var result = await dialog.Result;
+
+        if (!result.Cancelled)
+        {
+            if (result.Data is Order)
+            {
+                Order o1 = (Order)result.Data;
+                Elements = await OrderService.UpdateOrder(o1);
+            }
+            else
+            {
+                Console.WriteLine("Error on coverting");
+            }
+            Snackbar.Add("Order Edited", Severity.Success);
+        }
+    }
+}

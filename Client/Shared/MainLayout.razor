@@ -1,0 +1,85 @@
+﻿@inherits LayoutComponentBase
+
+@using Microsoft.AspNetCore.Components.Authorization
+
+@inject NavigationManager _navigationManager
+@inject ILoginService LoginService
+@inject Blazored.LocalStorage.ILocalStorageService _localStorageService
+
+<MudDialogProvider />
+<MudSnackbarProvider />
+
+<MudLayout>
+    <MudAppBar Elevation="25">
+        <MudIconButton Icon="@Icons.Material.Outlined.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
+        <MudHidden Breakpoint="Breakpoint.SmAndDown">
+            <MudIcon Icon="@Icons.Filled.AccountBalanceWallet" Size="Size.Large" />
+        </MudHidden>
+        <MudHidden Breakpoint="Breakpoint.Xs">
+            <MudText Typo="Typo.h6" Class="ml-4">WalletPWA</MudText>
+        </MudHidden>
+        <MudHidden Breakpoint="Breakpoint.Xs" Invert="true">
+            <MudText Typo="Typo.subtitle2">WalletPWA</MudText>
+        </MudHidden>
+        <MudSpacer />
+        <ThemeChangeButton />
+        <MudMenu Icon="@Icons.Material.Outlined.Translate" Style="display: none;" Color="Color.Inherit" Direction="Direction.Bottom" OffsetY="true" Dense="true">
+            <MudMenuItem>English</MudMenuItem>
+            <MudMenuItem>Swedish</MudMenuItem>
+            <MudMenuItem>Old Norse</MudMenuItem>
+        </MudMenu>
+        <MudMenu Icon="@Icons.Material.Filled.AccountCircle" Color="Color.Inherit" Direction="Direction.Left" OffsetX="true" Dense="true">
+            <ChildContent>
+                <MudListItem Text="Logout" Icon="@Icons.Material.Outlined.Login" OnClick="@((e) => Logout())" />
+            </ChildContent>
+        </MudMenu>
+    </MudAppBar>
+
+    <MudDrawer @bind-Open="_drawerOpen" Elevation="25" ClipMode="DrawerClipMode.Never" Breakpoint="@Breakpoint.Lg">
+        <NavMenu />
+    </MudDrawer>
+    <MudMainContent>
+        <MudContainer MaxWidth="MaxWidth.False" Class="mt-4">
+            @Body
+        </MudContainer>
+    </MudMainContent>
+</MudLayout>
+
+
+@code { private MudBlazorAdminDashboard _theme = new();
+
+    [CascadingParameter] protected Task<AuthenticationState> AuthStat { get; set; }
+
+
+
+
+
+    protected async override Task OnInitializedAsync()
+    {
+        //base.OnInitialized();
+        var user = (await AuthStat).User;
+        if (!user.Identity.IsAuthenticated)
+        {
+            if (!_navigationManager.Uri.Contains("/pages/authentication")) _navigationManager.NavigateTo("/pages/authentication/login");
+            //NavigationManager.NavigateTo($"authentication/login?returnUrl={Uri.EscapeDataString(NavigationManager.Uri)}");
+        }
+    }
+
+    public bool _drawerOpen = true;
+
+    void DrawerToggle()
+    {
+        _drawerOpen = !_drawerOpen;
+    }
+
+    async Task Logout()
+    {
+        await _localStorageService.RemoveItemAsync("jwt_token");
+        _navigationManager.NavigateTo("/pages/authentication/login", true);
+    }
+
+    protected override void OnInitialized()
+    {
+        StateHasChanged();
+    }
+ }

@@ -1,0 +1,152 @@
+﻿@page "/"
+@page "/personal/dashboard"
+
+
+@inject IOrderService OrderService
+
+
+<style>
+    
+    
+    .mud-chart-serie{
+        transform : scale(0.9);
+        transition: all .2s ease-in-out;
+    }
+    .mud-chart-serie:hover{
+        transform : scale(1.0);
+    }
+
+</style>
+
+
+<MudText Typo="Typo.h5" Color="Color.Primary" Class="mb-4">Dashboard</MudText>
+<MudGrid>
+    <MudItem xs="12" sm="6">
+        <StockCard Name="Wallet" Icon="@Icons.Material.Filled.AccountBalanceWallet" Value="@wallet" ValueOld="@walletOld" Percentage="false" />
+    </MudItem>
+    <MudItem xs="12" sm="6">
+        <StockCard Name="Dollar" Icon="@Icons.Material.Filled.AttachMoney" Value="@AssetsResume[0].actualValue" ValueOld="@AssetsResume[0].variation" Percentage="true" />
+    </MudItem>
+    <MudItem xs="12" sm="6">
+        <StockCard Name="S&P500" Icon="@Icons.Material.Filled.ShowChart" Value="@AssetsResume[1].actualValue" ValueOld="@AssetsResume[1].variation" Percentage="true" />
+    </MudItem>
+    <MudItem xs="12" sm="6">
+        <StockCard Name="IBOV" Icon="@Icons.Material.Filled.ShowChart" Value="@AssetsResume[2].actualValue" ValueOld="@AssetsResume[2].variation" Percentage="true" />
+    </MudItem>
+
+    <MudItem xs="12" sm="5">
+        <MudPaper Class="pa-4" Style="height:300px;">
+            <MudChart ChartType="ChartType.Pie" Width="200px" Height="200px" @bind-SelectedIndex="Index" InputData="@Assets.Select(x=>(double)x.totalValue).ToArray()" InputLabels="@Assets.Select(x=>x.asset.Stock).ToArray()"></MudChart>
+
+        </MudPaper>
+    </MudItem>
+    <MudItem xs="12" sm="7">
+        <MudPaper Class="pa-4" Style="height:300px;">
+            @if (Series?.Any() == true)
+            {
+                <MudChart ChartType="ChartType.Line"  ChartSeries="@Series" @bind-SelectedIndex="Index" XAxisLabels="@XAxisLabels" ChartOptions="options" Width="100%" Height="220px"></MudChart>
+    
+            }
+            else
+            {
+                <MudText Typo="Typo.h6"> No data </MudText>
+
+            }
+            
+        </MudPaper>
+    </MudItem>
+
+    <MudItem xs="12">
+        <MudPaper Width="100%" Class="pa-5">
+                @foreach (var asset in Assets)
+                {
+                        <AssetCard asset="@asset">
+
+                        </AssetCard>
+                }
+        </MudPaper>
+    </MudItem>
+    
+</MudGrid>
+
+@code {
+
+    private int Index = -1; //default value cannot be 0 -> first selectedindex is 0.
+
+
+    private float wallet;
+    private float walletOld;
+
+    private IEnumerable<AssetNow> Assets = new List<AssetNow>();
+
+    private ChartOptions options = new ChartOptions();
+    public List<ChartSeries> Series = new List<ChartSeries>();
+    public string[] XAxisLabels;
+
+    private List<AssetPrice> AssetsResume = new List<AssetPrice>{ 
+        new AssetPrice { actualValue = 0, variation = 0}, 
+        new AssetPrice { actualValue = 0, variation = 0},
+        new AssetPrice { actualValue = 0, variation = 0}};
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var patrimonies = await OrderService.GetPatrimony();
+            if (patrimonies?.Any() == true)
+            {
+                Series.Add(new ChartSeries()
+                    {
+                        Name = "Patrimony",
+                        Data = patrimonies.Select(p => (double)p.priceToday).ToArray()
+                    });
+                XAxisLabels = patrimonies.Select(p => p.Date.ToString("dd/MM")).ToArray();
+                options.YAxisFormat = "c2";
+                options.YAxisLines = false;
+                options.MaxNumYAxisTicks = 5;
+            }
+
+            LoadAssets();
+        }
+        catch (Exception ex)
+        {
+                //logging the error and returning null
+                Console.WriteLine("Exception : " + ex.Message);
+
+            }
+    }
+
+    protected async Task LoadAssets(){
+        while (true) {
+            
+                var resumeTask = OrderService.GetResume();
+
+                Assets = await OrderService.GetAssetsNow();
+                wallet = 0;
+                walletOld = 0;
+                foreach(var asset in Assets){
+                    wallet += asset.totalValue;
+                    walletOld += asset.asset.Quantity * asset.asset.Price;
+                }
+
+                AssetsResume = await resumeTask;
+
+                StateHasChanged();
+            
+            
+            await Task.Delay(30000);
+
+        }
+    }
+
+
+    class EarningReport
+    {
+        public string Avatar;
+        public string Name;
+        public string Title;
+        public Color Severity;
+        public string SeverityTitle;
+        public string Salary;
+    } 
+}

@@ -1,0 +1,86 @@
+﻿
+
+<MudDialog>
+    <TitleContent>
+        @if (editOrder)
+        {
+            <MudText Typo="Typo.h6">
+                Edit Order
+            </MudText>
+        }
+        else
+        {
+            <MudText Typo="Typo.h6">
+                Create Order
+            </MudText>
+        }
+
+    </TitleContent>
+    <DialogContent>
+        <MudForm @bind-IsValid="@success">
+            <MudSelect Label="Market Type" @bind-Value="@order.AssetMarketType">
+                @foreach (MarketType item in Enum.GetValues(typeof(MarketType)))
+                {
+                    <MudSelectItem Value="@item">@item</MudSelectItem>
+                }
+            </MudSelect>
+            <MudTextField @bind-Value="@order.Stock" Immediate="true" Label="Stock" Required="true" RequiredError="Password is required!" />
+            <MudNumericField @bind-Value="@order.Price" Format="c2" Label="Price" Variant="Variant.Text" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.AttachMoney" HideSpinButtons="true" />
+            <MudNumericField @bind-Value="@order.OperationCost" Format="c2" Label="Operation Cost" Variant="Variant.Text" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.AttachMoney" HideSpinButtons="true" />
+            <MudNumericField @bind-Value="@order.Quantity" Label="Quantity" HideSpinButtons="true" />
+            <MudDatePicker Label="Date" Editable="true" @bind-Date="@DateNullable" Placeholder="Select Date" />
+
+        </MudForm>
+
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        @if (editOrder)
+        {
+
+            <MudButton Color="Color.Warning" OnClick="DeleteServer" Disabled="@(!success)">Edit Order</MudButton>
+        }
+        else
+        {
+            <MudButton Color="Color.Success" OnClick="DeleteServer" Disabled="@(!success)">Add Order</MudButton>
+        }
+    </DialogActions>
+</MudDialog>
+
+@code {
+
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+
+
+    [Parameter] public bool editOrder { get; set; } = false;
+    [Parameter]
+    public Order order { get; set; } = new Order
+    {
+        AssetMarketType = MarketType.Swing,
+        Stock = "BBAS3",
+        Price = 14.5f,
+        OperationCost = 0,
+        Quantity = 100,
+        Date = DateTime.Today
+    };
+
+    [Parameter] public DateTime? DateNullable { get; set; } = DateTime.Today;
+
+
+
+    bool success = true;
+
+
+    private void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+
+    private void DeleteServer()
+    {
+        order.Date = DateNullable ?? DateTime.Today;
+        MudDialog.Close(DialogResult.Ok(order));
+    }
+
+
+}

@@ -1,0 +1,48 @@
+﻿<MudCard Class="@Class">
+    <MudCardHeader>
+        <CardHeaderAvatar>
+            <MudIcon Icon="@Icon" Color="Color.Inherit" Style="width:48px; height:48px;"></MudIcon>
+        </CardHeaderAvatar>
+        <CardHeaderContent>
+            <MudText Align="Align.Center" Typo="Typo.subtitle1">@Name</MudText>
+            <MudText Align="Align.Center" Typo="Typo.h4">@Value.ToString("c2")</MudText>
+            <MudText Color="@DifferenceColor" Typo="Typo.body2" Align="Align.Center">
+                @Difference.ToString(DifferenceString) @(Difference > 0? "🡩":"🡫")
+            </MudText>
+
+        </CardHeaderContent>
+    </MudCardHeader>
+</MudCard>
+@code {
+    [Parameter] public string Class { get; set; }
+    [Parameter] public string Style { get; set; }
+
+
+    [Parameter] public string Icon { get; set; }
+
+    [Parameter] public string Name { get; set; } = "stock name";
+    [Parameter] public double Value { get; set; }
+    [Parameter] public double ValueOld { get; set; }
+    [Parameter] public bool Percentage { get; set; } = true;
+
+
+    public Color DifferenceColor { get; set; }
+    public string DifferenceString { get; set; }
+    public double Difference { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        if (Percentage)
+        {
+            Difference = ValueOld * 0.01;// ((Value - ValueOld) / ValueOld);
+            DifferenceString = "p2";
+        }
+        else
+        {
+            Difference = (Value - ValueOld);
+            DifferenceString = "c2";
+        }
+
+        DifferenceColor = Difference > 0 ? Color.Success : Color.Error;
+    }
+}
