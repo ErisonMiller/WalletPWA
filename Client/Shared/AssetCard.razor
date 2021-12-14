@@ -76,7 +76,7 @@
         <MudText Typo="Typo.caption" class="tit">Price</MudText>
         <br class="mud-typography">
         <MudText Typo="Typo.button">@asset.actualValue.ToString("c2")</MudText>
-        <MudText Typo="Typo.button" Color="@getColor(asset.variation)">@(asset.variation > 0? "🡩":"🡫") @(asset.variation_F)</MudText>
+        <MudText Typo="Typo.button" Color="@getColor(asset.variation)">@(asset.variation > 0? "▲":"▼") @(asset.variation_F)</MudText>
 
 
     </MudItem>
@@ -107,7 +107,7 @@
         <MudText Typo="Typo.caption" class="tit">Rentability</MudText>
         <br class="mud-typography">
         <MudText Typo="Typo.button" Color="@getColor(rentability)">@(rentability > 0? "+":"") @rentability.ToString("c2")</MudText>
-        <MudText Typo="Typo.button" Color="@getColor(rentability)">@(rentability > 0? "🡩":"🡫") @((rentability/(asset.asset.Quantity * asset.asset.Price)).ToString("p2"))</MudText>
+        <MudText Typo="Typo.button" Color="@getColor(rentability)">@(rentability > 0? "▲":"▼") @((rentability/(asset.asset.Quantity * asset.asset.Price)).ToString("p2"))</MudText>
     </MudItem>
 
 </MudGrid>

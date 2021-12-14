@@ -7,7 +7,7 @@
             <MudText Align="Align.Center" Typo="Typo.subtitle1">@Name</MudText>
             <MudText Align="Align.Center" Typo="Typo.h4">@Value.ToString("c2")</MudText>
             <MudText Color="@DifferenceColor" Typo="Typo.body2" Align="Align.Center">
-                @Difference.ToString(DifferenceString) @(Difference > 0? "🡩":"🡫")
+                @Difference.ToString(DifferenceString) @(Difference > 0? "▲":"▼")
             </MudText>
 
         </CardHeaderContent>
