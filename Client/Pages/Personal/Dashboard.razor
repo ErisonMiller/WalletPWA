@@ -109,7 +109,7 @@
     protected override async Task OnInitializedAsync()
     {
         Thread.CurrentThread.CurrentCulture = new CultureInfo("pt-BR");
-      
+
         try
         {
 
@@ -129,25 +129,28 @@
                 options.MaxNumYAxisTicks = 5;
             }
 
-            
+
         }
         catch (Exception ex)
         {
-                //logging the error and returning null
-                Console.WriteLine("Exception : " + ex.Message);
+            //logging the error and returning null
+            Console.WriteLine("Exception : " + ex.Message);
 
-            }
+        }
     }
 
     protected async void LoadAssets(){
         while (true) {
-            
+
+            try
+            {
                 var resumeTask = OrderService.GetResume();
 
                 Assets = await OrderService.GetAssetsNow();
                 wallet = 0;
                 walletOld = 0;
-                foreach(var asset in Assets){
+                foreach (var asset in Assets)
+                {
                     wallet += asset.totalValue;
                     walletOld += asset.asset.Quantity * asset.asset.Price;
                 }
@@ -155,8 +158,14 @@
                 AssetsResume = await resumeTask;
 
                 StateHasChanged();
-            
-            
+    
+          }          catch (Exception ex)
+            {
+                //logging the error and returning null
+                Console.WriteLine("Exception : " + ex.Message);
+
+            }
+
             await Task.Delay(30000);
 
         }
