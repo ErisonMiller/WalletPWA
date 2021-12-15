@@ -18,7 +18,7 @@ namespace WalletPWA.Client
             var builder = WebAssemblyHostBuilder.CreateDefault(args);
             builder.RootComponents.Add<App>("#app");
 
-            builder.Services.AddOptions();
+            //builder.Services.AddOptions();
             builder.Services.AddAuthorizationCore();
 
 

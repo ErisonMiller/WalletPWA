@@ -59,12 +59,10 @@
 
     protected async override Task OnInitializedAsync()
     {
-        //base.OnInitialized();
         var user = (await AuthStat).User;
         if (!user.Identity.IsAuthenticated)
         {
             if (!_navigationManager.Uri.Contains("/pages/authentication")) _navigationManager.NavigateTo("/pages/authentication/login");
-            //NavigationManager.NavigateTo($"authentication/login?returnUrl={Uri.EscapeDataString(NavigationManager.Uri)}");
         }
     }
 

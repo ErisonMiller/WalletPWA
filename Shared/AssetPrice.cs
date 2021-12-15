@@ -10,6 +10,8 @@ namespace WalletPWA.Shared
     {
         public string ticker { get; set; }
         public double actualValue { get; set; }
+        public string actualValue_F { get; set; }
         public double variation { get; set; }
+        public string variation_F { get; set; }
     }
 }

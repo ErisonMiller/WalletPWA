@@ -66,7 +66,6 @@ namespace WalletPWA.Server.Services
                                 x => new
                                 {
                                     UserId = x.Key,
-                                    Date = DateTime.Now,
                                     assetList = x.Select(o => new { o.Stock, o.Quantity }).ToList(),
                                     priceOriginal = x.Sum(o => o.Quantity * o.Price)
                                 }
@@ -87,13 +86,14 @@ namespace WalletPWA.Server.Services
                     sum += prices[value.Stock] * value.Quantity;
                 }
 
-                patrimonies.Add(new Patrimony { UserId = user.UserId, Date =user.Date,  priceOriginal=user.priceOriginal, priceToday = sum});
+                patrimonies.Add(new Patrimony { UserId = user.UserId, Date = DateTime.Now,  priceOriginal=user.priceOriginal, priceToday = sum});
             }
 
             _context.AddRange(patrimonies);
             await _context.SaveChangesAsync();
 
-            Console.WriteLine(JsonSerializer.Serialize(patrimonies));
+            _logger.LogInformation("Pratimonies added");
+
         }
 
         public Task StopAsync(CancellationToken stoppingToken)

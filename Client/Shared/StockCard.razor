@@ -1,11 +1,12 @@
-﻿<MudCard Class="@Class">
+﻿@using System.Globalization
+<MudCard Class="@Class">
     <MudCardHeader>
         <CardHeaderAvatar>
             <MudIcon Icon="@Icon" Color="Color.Inherit" Style="width:48px; height:48px;"></MudIcon>
         </CardHeaderAvatar>
         <CardHeaderContent>
             <MudText Align="Align.Center" Typo="Typo.subtitle1">@Name</MudText>
-            <MudText Align="Align.Center" Typo="Typo.h4">@Value.ToString("c2")</MudText>
+            <MudText Align="Align.Center" Typo="Typo.h4">@Value.ToString(TypeValue)</MudText>
             <MudText Color="@DifferenceColor" Typo="Typo.body2" Align="Align.Center">
                 @Difference.ToString(DifferenceString) @(Difference > 0? "▲":"▼")
             </MudText>
@@ -21,6 +22,7 @@
     [Parameter] public string Icon { get; set; }
 
     [Parameter] public string Name { get; set; } = "stock name";
+    [Parameter] public string TypeValue { get; set; } = "c2";
     [Parameter] public double Value { get; set; }
     [Parameter] public double ValueOld { get; set; }
     [Parameter] public bool Percentage { get; set; } = true;

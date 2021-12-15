@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -79,7 +80,7 @@ namespace WalletPWA.Server.Controllers
 
                 var httpResponse = (HttpWebResponse)httpRequest.GetResponse();
                 var streamReader = new StreamReader(httpResponse.GetResponseStream());
-                var doc = JsonDocument.Parse(streamReader.ReadToEnd());
+                var doc = JsonDocument.Parse(streamReader.ReadToEnd()).RootElement.GetProperty("USDBRL");
 
 
                 List<AssetPrice> assestsPrice = new List<AssetPrice>();
@@ -88,8 +89,8 @@ namespace WalletPWA.Server.Controllers
                     new AssetPrice
                     {
                         ticker = "Dollar",
-                        actualValue = double.Parse(doc.RootElement.GetProperty("USDBRL").GetProperty("bid").GetString().Replace('.',',')),
-                        variation = double.Parse(doc.RootElement.GetProperty("USDBRL").GetProperty("pctChange").GetString().Replace('.', ','))
+                        actualValue = double.Parse(doc.GetProperty("bid").GetString(), CultureInfo.InvariantCulture),
+                        variation = double.Parse(doc.GetProperty("pctChange").GetString(), CultureInfo.InvariantCulture)
                     });
 
                 assestsPrice.Add(

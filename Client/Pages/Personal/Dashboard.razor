@@ -1,5 +1,7 @@
 ﻿@page "/"
 @page "/personal/dashboard"
+@using System.Globalization
+@using System.Threading
 
 
 @inject IOrderService OrderService
@@ -28,10 +30,10 @@
         <StockCard Name="Dollar" Icon="@Icons.Material.Filled.AttachMoney" Value="@AssetsResume[0].actualValue" ValueOld="@AssetsResume[0].variation" Percentage="true" />
     </MudItem>
     <MudItem xs="12" sm="6">
-        <StockCard Name="S&P500" Icon="@Icons.Material.Filled.ShowChart" Value="@AssetsResume[1].actualValue" ValueOld="@AssetsResume[1].variation" Percentage="true" />
+        <StockCard Name="IBOV" Icon="@Icons.Material.Filled.ShowChart" TypeValue="0,0.00 pnts" Value="@AssetsResume[1].actualValue" ValueOld="@AssetsResume[1].variation" Percentage="true" />
     </MudItem>
     <MudItem xs="12" sm="6">
-        <StockCard Name="IBOV" Icon="@Icons.Material.Filled.ShowChart" Value="@AssetsResume[2].actualValue" ValueOld="@AssetsResume[2].variation" Percentage="true" />
+        <StockCard Name="S&P500" Icon="@Icons.Material.Filled.ShowChart" TypeValue="0,0.00 pnts" Value="@AssetsResume[2].actualValue" ValueOld="@AssetsResume[2].variation" Percentage="true" />
     </MudItem>
 
     <MudItem xs="12" sm="5">
@@ -106,9 +108,14 @@
 
     protected override async Task OnInitializedAsync()
     {
+        Thread.CurrentThread.CurrentCulture = new CultureInfo("pt-BR");
+      
         try
         {
-            var patrimonies = await OrderService.GetPatrimony();
+
+            var patrimoniesTask = OrderService.GetPatrimony();
+            LoadAssets();
+            var patrimonies = await patrimoniesTask;
             if (patrimonies?.Any() == true)
             {
                 Series.Add(new ChartSeries()
@@ -122,7 +129,7 @@
                 options.MaxNumYAxisTicks = 5;
             }
 
-            LoadAssets();
+            
         }
         catch (Exception ex)
         {
@@ -132,7 +139,7 @@
             }
     }
 
-    protected async Task LoadAssets(){
+    protected async void LoadAssets(){
         while (true) {
             
                 var resumeTask = OrderService.GetResume();
