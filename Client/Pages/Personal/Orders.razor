@@ -59,7 +59,7 @@
         <MudTh><MudTableSortLabel SortBy="new Func<Order, object>(x=>x.Stock)">     Stock    </MudTableSortLabel></MudTh>
         <MudTh><MudTableSortLabel SortBy="new Func<Order, object>(x=>x.Price)">   Price    </MudTableSortLabel></MudTh>
         <MudTh><MudTableSortLabel SortBy="new Func<Order, object>(x=>x.Quantity)">   Quantity    </MudTableSortLabel></MudTh>
-        <MudTh><MudTableSortLabel SortBy="new Func<Order, object>(x=>x.OperationProfit)">   Rentability    </MudTableSortLabel></MudTh>
+        <!--<MudTh><MudTableSortLabel SortBy="new Func<Order, object>(x=>x.OperationProfit)">   Rentability    </MudTableSortLabel></MudTh>-->
         <MudTh><MudTableSortLabel SortBy="new Func<Order, object>(x=>x.Date)">  Date    </MudTableSortLabel></MudTh>
     </HeaderContent>
     <RowTemplate>
@@ -73,7 +73,7 @@
         </MudTd>
         <MudTd DataLabel="Price"> @(context.Price.ToString("c2")) </MudTd>
         <MudTd DataLabel="Quantity">@context.Quantity</MudTd>
-        <MudTd DataLabel="Rentability">
+        <!--<MudTd DataLabel="Rentability">
             @if (context.OperationProfit > 0)
             {
                 <div style="display:flex; flex-direction: row; vertical-align:center">
@@ -98,7 +98,7 @@
             }
 
 
-        </MudTd>
+        </MudTd>-->
         <MudTd DataLabel="Date">@context.Date.ToShortDateString()</MudTd>
     </RowTemplate>
     <PagerContent>

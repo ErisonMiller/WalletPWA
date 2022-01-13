@@ -90,7 +90,7 @@ namespace WalletPWA.Server.Controllers
                 _context.orders.Add(order);
                 await _context.SaveChangesAsync();
             }
-            return Ok(await _context.orders.ToListAsync());
+            return await GetOrders();
         }
 
 
@@ -100,7 +100,7 @@ namespace WalletPWA.Server.Controllers
             order.Stock.ToUpper();
             _context.orders.Update(order);
             await _context.SaveChangesAsync();
-            return Ok(await _context.orders.ToListAsync());
+            return await GetOrders();
         }
 
         [HttpDelete]
@@ -108,7 +108,7 @@ namespace WalletPWA.Server.Controllers
         {
             _context.orders.Remove(order);
             await _context.SaveChangesAsync();
-            return Ok(await _context.orders.ToListAsync());
+            return await GetOrders();
         }
     }
 }
